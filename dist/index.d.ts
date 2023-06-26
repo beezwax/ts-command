@@ -1,6 +1,6 @@
-type CommandContext = {
+interface CommandContext {
     success: boolean;
-};
+}
 declare abstract class Command {
     context: CommandContext;
     executed: boolean;
@@ -20,4 +20,4 @@ declare class Runner {
 }
 declare const compose: <T extends CommandContext>(...commands: CommandClass<T>[]) => (context: T) => T;
 
-export { Command, CommandClass, Runner, compose };
+export { Command, CommandClass, CommandContext, Runner, compose };

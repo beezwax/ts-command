@@ -1,7 +1,7 @@
 {
-  "name": "ts-railway",
+  "name": "ts-command",
   "version": "1.0.0",
-  "description": "Railway oriented programming for TS",
+  "description": "A Command pattern implementation for TypeScript",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsup src/index.ts --dts",

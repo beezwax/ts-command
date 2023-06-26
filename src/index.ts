@@ -1,4 +1,6 @@
-type CommandContext = { success: boolean };
+export interface CommandContext {
+  success: boolean;
+}
 
 export abstract class Command {
   context: CommandContext;

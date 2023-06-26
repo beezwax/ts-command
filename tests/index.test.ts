@@ -1,8 +1,7 @@
-import { Command, compose } from "../src/index";
+import { Command, CommandContext, compose } from "../src/index";
 
 describe("compose", () => {
-  interface GenerateNumberContext {
-    success: boolean;
+  interface GenerateNumberContext extends CommandContext {
     value: number;
   }
 
@@ -19,8 +18,7 @@ describe("compose", () => {
     }
   }
 
-  interface AddTwoContext {
-    success: boolean;
+  interface AddTwoContext extends CommandContext {
     value: number;
   }
 
@@ -37,8 +35,7 @@ describe("compose", () => {
     }
   }
 
-  interface GenerateStringContext {
-    success: boolean;
+  interface GenerateStringContext extends CommandContext {
     string: string;
   }
 
@@ -59,17 +56,7 @@ describe("compose", () => {
     }
   }
 
-  interface FailConext {
-    success: boolean;
-  }
-
   class FailCommand extends Command {
-    context: FailConext;
-
-    constructor(context: FailConext) {
-      super(context);
-    }
-
     run() {
       this.context.success = false;
     }
@@ -105,7 +92,7 @@ describe("compose", () => {
   });
 
   test("undo", () => {
-    const context = { success: true, value: 0, string: "" };
+    const context = { success: true, string: "" };
     const command = compose<typeof context>(GenerateStringCommand, FailCommand);
 
     const result = command(context);
