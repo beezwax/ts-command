@@ -55,7 +55,7 @@ class AddTwoCommand extends Command {
 With those two commands in place, we can compose them with `compose`:
 
 ```typescript
-const context = { success: true, value: 0, string: "" };
+const context = { success: true, value: 0 };
 const command = compose<typeof context>(GenerateNumberCommand, AddTwoCommand);
 
 const result = command(context);
