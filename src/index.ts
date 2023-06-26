@@ -1,5 +1,18 @@
-export interface Command {
-  execute(): void;
+type CommandContext = { success: boolean };
+
+export abstract class Command {
+  context: CommandContext;
+
+  execute() {
+    if (!this.context.success) return;
+    this.run();
+  }
+
+  abstract run(): void;
+}
+
+export interface CommandClass<T> {
+  new (context: T & CommandContext): Command;
 }
 
 export class Runner {
@@ -14,8 +27,11 @@ export class Runner {
   }
 }
 
-export const compose = <T>(context: T, ...commands: Command[]) => {
-  const runner = new Runner(...commands);
-  runner.execute();
-  return context;
-};
+export const compose =
+  <T>(...commands: CommandClass<T>[]) =>
+  (context: T & CommandContext) => {
+    const copy = { ...context };
+    const runner = new Runner(...commands.map((klass) => new klass(copy)));
+    runner.execute();
+    return copy;
+  };

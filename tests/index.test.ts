@@ -1,19 +1,20 @@
-import { Command, Runner } from "../src/index";
+import { Command, compose } from "../src/index";
 
-test("works", () => {
+describe("compose", () => {
   interface GenerateNumberContext {
     success: boolean;
     value: number;
   }
 
-  class GenerateNumberCommand implements Command {
+  class GenerateNumberCommand extends Command {
     context: GenerateNumberContext;
 
     constructor(context: GenerateNumberContext) {
+      super();
       this.context = context;
     }
 
-    execute() {
+    run() {
       this.context.success = true;
       this.context.value = 2;
     }
@@ -24,14 +25,15 @@ test("works", () => {
     value: number;
   }
 
-  class AddTwoCommand implements Command {
+  class AddTwoCommand extends Command {
     context: AddTwoContext;
 
     constructor(context: AddTwoContext) {
+      super();
       this.context = context;
     }
 
-    execute() {
+    run() {
       this.context.success = true;
       this.context.value = this.context.value + 2;
     }
@@ -42,25 +44,63 @@ test("works", () => {
     string: string;
   }
 
-  class GenerateStringCommand implements Command {
+  class GenerateStringCommand extends Command {
     context: GenerateStringContext;
 
     constructor(context: GenerateStringContext) {
+      super();
       this.context = context;
     }
 
-    execute() {
+    run() {
       this.context.success = true;
       this.context.string = "Hello";
     }
   }
 
-  // Compose
-  const context = { success: true, value: 0, string: "" };
-  const generateNumber = new GenerateNumberCommand(context);
-  const addTwo = new AddTwoCommand(context);
-  const generateString = new GenerateStringCommand(context);
-  const runner = new Runner(generateNumber, addTwo, generateString);
-  runner.execute();
-  console.log(context);
+  interface FailConext {
+    success: boolean;
+  }
+
+  class FailCommand extends Command {
+    context: FailConext;
+
+    constructor(context: FailConext) {
+      super();
+      this.context = context;
+    }
+
+    run() {
+      this.context.success = false;
+    }
+  }
+
+  test("stops on failure", () => {
+    const context = { success: true, value: 0 };
+    const command = compose<typeof context>(
+      GenerateNumberCommand,
+      FailCommand,
+      AddTwoCommand
+    );
+
+    const result = command(context);
+
+    expect(result.success).toEqual(false);
+    expect(result.value).toEqual(2);
+  });
+
+  test("chains", () => {
+    const context = { success: true, value: 0, string: "" };
+    const command = compose<typeof context>(
+      GenerateNumberCommand,
+      AddTwoCommand,
+      GenerateStringCommand
+    );
+
+    const result = command(context);
+
+    expect(result.success).toEqual(true);
+    expect(result.value).toEqual(4);
+    expect(result.string).toEqual("Hello");
+  });
 });
