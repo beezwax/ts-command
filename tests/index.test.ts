@@ -1,4 +1,4 @@
-import { Command, CommandContext, compose } from "../src/index";
+import { Command, CommandContext, compose, run } from "../src/index";
 
 describe("compose", () => {
   interface GenerateNumberContext extends CommandContext {
@@ -76,7 +76,7 @@ describe("compose", () => {
     expect(result.value).toEqual(2);
   });
 
-  test("chains", () => {
+  test("compose", () => {
     const context = { success: true, value: 0, string: "" };
     const command = compose<typeof context>(
       GenerateNumberCommand,
@@ -89,6 +89,15 @@ describe("compose", () => {
     expect(result.success).toEqual(true);
     expect(result.value).toEqual(4);
     expect(result.string).toEqual("Hello");
+  });
+
+  test("run", () => {
+    const context = { success: true, value: 0 };
+
+    const result = run(GenerateNumberCommand, context);
+
+    expect(result.success).toEqual(true);
+    expect(result.value).toEqual(2);
   });
 
   test("undo", () => {

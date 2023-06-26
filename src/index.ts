@@ -57,3 +57,8 @@ export const compose =
 
     return copy;
   };
+
+export const run = <T extends CommandContext>(
+  CommandClass: CommandClass<T>,
+  context: T
+) => compose(CommandClass)(context);
