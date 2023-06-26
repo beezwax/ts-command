@@ -40,7 +40,9 @@ export class Runner {
   }
 
   undo() {
-    this.commands.forEach((command) => command.executed && command.undo());
+    [...this.commands]
+      .reverse()
+      .forEach((command) => command.executed && command.undo());
   }
 }
 
