@@ -2,8 +2,9 @@
   "name": "ts-railway",
   "version": "1.0.0",
   "description": "Railway oriented programming for TS",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "tsup src/index.ts --dts",
     "test": "jest"
   },
   "devDependencies": {
