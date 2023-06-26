@@ -2,7 +2,12 @@ type CommandContext = { success: boolean };
 
 export abstract class Command {
   context: CommandContext;
-  executed: boolean = false;
+  executed: boolean;
+
+  constructor(context: CommandContext) {
+    this.context = context;
+    this.executed = false;
+  }
 
   execute() {
     if (!this.context.success) return;

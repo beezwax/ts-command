@@ -10,8 +10,7 @@ describe("compose", () => {
     context: GenerateNumberContext;
 
     constructor(context: GenerateNumberContext) {
-      super();
-      this.context = context;
+      super(context);
     }
 
     run() {
@@ -29,8 +28,7 @@ describe("compose", () => {
     context: AddTwoContext;
 
     constructor(context: AddTwoContext) {
-      super();
-      this.context = context;
+      super(context);
     }
 
     run() {
@@ -48,8 +46,7 @@ describe("compose", () => {
     context: GenerateStringContext;
 
     constructor(context: GenerateStringContext) {
-      super();
-      this.context = context;
+      super(context);
     }
 
     run() {
@@ -70,8 +67,7 @@ describe("compose", () => {
     context: FailConext;
 
     constructor(context: FailConext) {
-      super();
-      this.context = context;
+      super(context);
     }
 
     run() {
