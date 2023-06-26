@@ -56,6 +56,10 @@ describe("compose", () => {
       this.context.success = true;
       this.context.string = "Hello";
     }
+
+    undo() {
+      this.context.string = "Undone";
+    }
   }
 
   interface FailConext {
@@ -102,5 +106,15 @@ describe("compose", () => {
     expect(result.success).toEqual(true);
     expect(result.value).toEqual(4);
     expect(result.string).toEqual("Hello");
+  });
+
+  test("undo", () => {
+    const context = { success: true, value: 0, string: "" };
+    const command = compose<typeof context>(GenerateStringCommand, FailCommand);
+
+    const result = command(context);
+
+    expect(result.success).toEqual(false);
+    expect(result.string).toEqual("Undone");
   });
 });

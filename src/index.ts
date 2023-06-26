@@ -2,13 +2,19 @@ type CommandContext = { success: boolean };
 
 export abstract class Command {
   context: CommandContext;
+  executed: boolean = false;
 
   execute() {
     if (!this.context.success) return;
+    this.executed = true;
     this.run();
   }
 
   abstract run(): void;
+
+  undo() {
+    // NOOP
+  }
 }
 
 export interface CommandClass<T extends CommandContext> {
@@ -25,6 +31,10 @@ export class Runner {
   execute() {
     this.commands.forEach((command) => command.execute());
   }
+
+  undo() {
+    this.commands.forEach((command) => command.executed && command.undo());
+  }
 }
 
 export const compose =
@@ -32,6 +42,9 @@ export const compose =
   (context: T) => {
     const copy = { ...context };
     const runner = new Runner(...commands.map((klass) => new klass(copy)));
+
     runner.execute();
+    if (!copy.success) runner.undo();
+
     return copy;
   };
