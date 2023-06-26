@@ -19,5 +19,6 @@ declare class Runner {
     undo(): void;
 }
 declare const compose: <T extends CommandContext>(...commands: CommandClass<T>[]) => (context: T) => T;
+declare const run: <T extends CommandContext>(CommandClass: CommandClass<T>, context: T) => T;
 
-export { Command, CommandClass, CommandContext, Runner, compose };
+export { Command, CommandClass, CommandContext, Runner, compose, run };

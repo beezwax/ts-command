@@ -21,7 +21,8 @@ var src_exports = {};
 __export(src_exports, {
   Command: () => Command,
   Runner: () => Runner,
-  compose: () => compose
+  compose: () => compose,
+  run: () => run
 });
 module.exports = __toCommonJS(src_exports);
 var Command = class {
@@ -49,7 +50,7 @@ var Runner = class {
     this.commands.forEach((command) => command.execute());
   }
   undo() {
-    this.commands.forEach((command) => command.executed && command.undo());
+    [...this.commands].reverse().forEach((command) => command.executed && command.undo());
   }
 };
 var compose = (...commands) => (context) => {
@@ -60,9 +61,11 @@ var compose = (...commands) => (context) => {
     runner.undo();
   return copy;
 };
+var run = (CommandClass, context) => compose(CommandClass)(context);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Command,
   Runner,
-  compose
+  compose,
+  run
 });
