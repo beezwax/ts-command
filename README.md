@@ -132,7 +132,7 @@ Note that `result.value` is `2` because `AddTwoCommand` was not executed.
 
 ## Undo
 
-You can define an `undo` command if you need to clean up after your command
+You can define an `undo` method if you need to clean up after your command
 when a subsequent command fails:
 
 ```typescript
@@ -173,4 +173,9 @@ Note that the initial value of `context.string` is `"Hello"`, but after
 `FailCommand` is executed, it calls `GenerateStringCommand#undo` and
 `context.string` ends up being `"Undone"`.
 
-The `#undo` method is also called by the `run` function.
+The `#undo` command is called in reverse order from the specified commands. So
+if you compose commands `A`, `B`, `C` and `D`, and command `D` fails, the
+order of the `#undo` calls will be `D -> C -> B -> A`.
+
+The `#undo` method is also called by the `run` function, as `run` is just an
+alias for `compose`.
