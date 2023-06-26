@@ -11,8 +11,8 @@ export abstract class Command {
   abstract run(): void;
 }
 
-export interface CommandClass<T> {
-  new (context: T & CommandContext): Command;
+export interface CommandClass<T extends CommandContext> {
+  new (context: T): Command;
 }
 
 export class Runner {
@@ -28,8 +28,8 @@ export class Runner {
 }
 
 export const compose =
-  <T>(...commands: CommandClass<T>[]) =>
-  (context: T & CommandContext) => {
+  <T extends CommandContext>(...commands: CommandClass<T>[]) =>
+  (context: T) => {
     const copy = { ...context };
     const runner = new Runner(...commands.map((klass) => new klass(copy)));
     runner.execute();
