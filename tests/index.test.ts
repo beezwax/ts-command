@@ -12,7 +12,7 @@ describe("compose", () => {
       super(context);
     }
 
-    run() {
+    execute() {
       this.context.success = true;
       this.context.value = 2;
     }
@@ -29,7 +29,7 @@ describe("compose", () => {
       super(context);
     }
 
-    run() {
+    execute() {
       this.context.success = true;
       this.context.value = this.context.value + 2;
     }
@@ -46,7 +46,7 @@ describe("compose", () => {
       super(context);
     }
 
-    run() {
+    execute() {
       this.context.success = true;
       this.context.string = "Hello";
     }
@@ -57,7 +57,7 @@ describe("compose", () => {
   }
 
   class FailCommand extends Command {
-    run() {
+    execute() {
       this.context.success = false;
     }
   }

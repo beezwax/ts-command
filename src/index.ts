@@ -2,19 +2,20 @@ export interface CommandContext {
   success: boolean;
 }
 
-export abstract class Command {
+interface ICommand {
+  context: CommandContext;
+  execute(): void;
+  undo(): void;
+}
+
+export abstract class Command implements ICommand {
   context: CommandContext;
 
   constructor(context: CommandContext) {
     this.context = context;
   }
 
-  execute() {
-    if (!this.context.success) return;
-    this.run();
-  }
-
-  abstract run(): void;
+  abstract execute(): void;
 
   undo() {
     // NOOP
@@ -22,14 +23,14 @@ export abstract class Command {
 }
 
 export interface CommandClass<T extends CommandContext> {
-  new (context: T): Command;
+  new (context: T): ICommand;
 }
 
 export class Runner {
-  commands: Command[];
-  executed: Command[];
+  commands: ICommand[];
+  executed: ICommand[];
 
-  constructor(...commands: Command[]) {
+  constructor(...commands: ICommand[]) {
     this.commands = commands;
   }
 
