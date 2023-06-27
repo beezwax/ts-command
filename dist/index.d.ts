@@ -1,24 +1,27 @@
 interface CommandContext {
     success: boolean;
 }
-declare abstract class Command {
+interface ICommand {
     context: CommandContext;
-    executed: boolean;
-    constructor(context: CommandContext);
     execute(): void;
-    abstract run(): void;
+    undo(): void;
+}
+declare abstract class Command implements ICommand {
+    context: CommandContext;
+    constructor(context: CommandContext);
+    abstract execute(): void;
     undo(): void;
 }
 interface CommandClass<T extends CommandContext> {
-    new (context: T): Command;
+    new (context: T): ICommand;
 }
 declare class Runner {
-    commands: Command[];
-    constructor(...commands: Command[]);
+    commands: ICommand[];
+    executed: ICommand[];
+    constructor(...commands: ICommand[]);
     execute(): void;
     undo(): void;
 }
-declare const compose: <T extends CommandContext>(...commands: CommandClass<T>[]) => (context: T) => T;
-declare const run: <T extends CommandContext>(CommandClass: CommandClass<T>, context: T) => T;
+declare const run: <T extends CommandContext>(context: T, ...commands: CommandClass<T>[]) => T;
 
-export { Command, CommandClass, CommandContext, Runner, compose, run };
+export { Command, CommandClass, CommandContext, Runner, run };

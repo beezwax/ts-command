@@ -21,39 +21,38 @@ var src_exports = {};
 __export(src_exports, {
   Command: () => Command,
   Runner: () => Runner,
-  compose: () => compose,
   run: () => run
 });
 module.exports = __toCommonJS(src_exports);
 var Command = class {
   context;
-  executed;
   constructor(context) {
     this.context = context;
-    this.executed = false;
-  }
-  execute() {
-    if (!this.context.success)
-      return;
-    this.executed = true;
-    this.run();
   }
   undo() {
   }
 };
 var Runner = class {
   commands;
+  executed;
   constructor(...commands) {
     this.commands = commands;
   }
   execute() {
-    this.commands.forEach((command) => command.execute());
+    this.executed = [];
+    for (let i = 0; i < this.commands.length; i++) {
+      const command = this.commands[i];
+      this.executed.push(command);
+      command.execute();
+      if (!command.context.success)
+        return;
+    }
   }
   undo() {
-    [...this.commands].reverse().forEach((command) => command.executed && command.undo());
+    [...this.executed].reverse().forEach((command) => command.undo());
   }
 };
-var compose = (...commands) => (context) => {
+var run = (context, ...commands) => {
   const copy = { ...context };
   const runner = new Runner(...commands.map((klass) => new klass(copy)));
   runner.execute();
@@ -61,11 +60,9 @@ var compose = (...commands) => (context) => {
     runner.undo();
   return copy;
 };
-var run = (CommandClass, context) => compose(CommandClass)(context);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Command,
   Runner,
-  compose,
   run
 });
