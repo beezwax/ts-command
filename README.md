@@ -223,6 +223,11 @@ const result = run(dummyContext, MyCommand);
 expect(result.something).toEqual(somethingElse);
 ```
 
-If you now each command works independently, and you know the command chaining
-works, then you can safely chain and compose your commands to generate complex
-actions without the need to test as much.
+If you know each command works independently (because you tested them), and
+you know the command chaining and composition works (because this library
+tested them), then you can feel safe when chaining and composing commands to
+perform complex actions.
+
+Note that you should still test command composition, but the tests can be
+mostly [happy paths](https://en.wikipedia.org/wiki/Happy_path), as failure
+should be contemplated within each command test.
