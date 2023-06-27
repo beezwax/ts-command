@@ -176,3 +176,30 @@ Note that the initial value of `context.string` is `"Hello"`, but after
 The `#undo` command is called in reverse order from the specified commands. So
 if you compose commands `A`, `B`, `C` and `D`, and command `D` fails, the
 order of the `#undo` calls will be `D -> C -> B -> A`.
+
+## Composing Commands
+
+You can compose smaller simple commands into a bigger, more complex one. This
+is particularly useful if you find you run the same subset of commands in
+several places. You can extract them into a composite command with `compose`:
+
+```typescript
+const GenerateNumberAndString = compose<
+  GenerateNumberContext & GenerateStringContext
+>(GenerateNumberCommand, GenerateStringCommand);
+```
+
+You can then `run` them like regular commands:
+
+```typescript
+const context = { success: true, value: 0, string: "" };
+const result = run<typeof context>(
+  context,
+  GenerateNumberAndString,
+  AddTwoCommand
+);
+
+expect(result.success).toBe(true);
+expect(result.value).toEqual(4);
+expect(result.string).toEqual("Hello");
+```

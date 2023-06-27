@@ -1,6 +1,6 @@
-import { Command, CommandContext, run } from "../src/index";
+import { Command, CommandContext, run, compose } from "../src/index";
 
-describe("compose", () => {
+describe("commands", () => {
   interface GenerateNumberContext extends CommandContext {
     value: number;
   }
@@ -102,5 +102,90 @@ describe("compose", () => {
 
     expect(result.success).toEqual(false);
     expect(result.string).toEqual("Undone");
+  });
+
+  describe("compose", () => {
+    test("compose", () => {
+      const GenerateAndAddTwo = compose<GenerateNumberContext & AddTwoContext>(
+        GenerateNumberCommand,
+        AddTwoCommand
+      );
+
+      const context = { success: true, value: 0 };
+      const result = run<typeof context>(context, GenerateAndAddTwo);
+
+      expect(result.success).toBe(true);
+      expect(result.value).toEqual(4);
+    });
+
+    test("run", () => {
+      const GenerateAndAddTwo = compose<GenerateNumberContext & AddTwoContext>(
+        GenerateNumberCommand,
+        AddTwoCommand
+      );
+
+      const context = { success: true, value: 0, string: "" };
+      const result = run<typeof context>(
+        context,
+        GenerateAndAddTwo,
+        GenerateStringCommand
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.value).toEqual(4);
+      expect(result.string).toEqual("Hello");
+    });
+
+    test("another run", () => {
+      const GenerateNumberAndString = compose<
+        GenerateNumberContext & GenerateStringContext
+      >(GenerateNumberCommand, GenerateStringCommand);
+
+      const context = { success: true, value: 0, string: "" };
+      const result = run<typeof context>(
+        context,
+        GenerateNumberAndString,
+        AddTwoCommand
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.value).toEqual(4);
+      expect(result.string).toEqual("Hello");
+    });
+
+    test("can undo", () => {
+      const GenerateNumberAndString = compose<
+        GenerateNumberContext & GenerateStringContext
+      >(GenerateNumberCommand, GenerateStringCommand);
+
+      const context = { success: true, value: 0, string: "" };
+      const result = run<typeof context>(
+        context,
+        GenerateNumberAndString,
+        FailCommand
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.value).toEqual(2);
+      expect(result.string).toEqual("Undone");
+    });
+
+    test("stops on failure", () => {
+      const GenerateNumberAndString = compose<
+        GenerateNumberContext & GenerateStringContext
+      >(GenerateNumberCommand, GenerateStringCommand);
+
+      const context = { success: true, value: 0, string: "" };
+      const result = run<typeof context>(
+        context,
+        GenerateNumberAndString,
+        FailCommand,
+        AddTwoCommand
+      );
+
+      expect(result.success).toEqual(false);
+      expect(result.value).toEqual(2);
+      expect(result.string).toEqual("Undone");
+    });
   });
 });

@@ -61,3 +61,26 @@ export const run = <T extends CommandContext>(
 
   return copy;
 };
+
+export const compose = <T extends CommandContext>(
+  ...klasses: CommandClass<T>[]
+) => {
+  return class ComposedCommand implements ICommand {
+    context: T;
+    runner: Runner;
+
+    constructor(context: T) {
+      this.context = context;
+      const commands = klasses.map((klass) => new klass(this.context));
+      this.runner = new Runner(...commands);
+    }
+
+    execute() {
+      this.runner.execute();
+    }
+
+    undo() {
+      this.runner.undo();
+    }
+  };
+};
