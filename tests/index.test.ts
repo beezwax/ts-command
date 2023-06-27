@@ -1,4 +1,4 @@
-import { Command, CommandContext, compose, run } from "../src/index";
+import { Command, CommandContext, run } from "../src/index";
 
 describe("compose", () => {
   interface GenerateNumberContext extends CommandContext {
@@ -62,15 +62,15 @@ describe("compose", () => {
     }
   }
 
-  test("compose", () => {
+  test("run", () => {
     const context = { success: true, value: 0, string: "" };
-    const command = compose<typeof context>(
+
+    const result = run(
+      context,
       GenerateNumberCommand,
       AddTwoCommand,
       GenerateStringCommand
     );
-
-    const result = command(context);
 
     expect(result.success).toEqual(true);
     expect(result.value).toEqual(4);
@@ -79,32 +79,22 @@ describe("compose", () => {
 
   test("stops on failure", () => {
     const context = { success: true, value: 0 };
-    const command = compose<typeof context>(
+
+    const result = run(
+      context,
       GenerateNumberCommand,
       FailCommand,
       AddTwoCommand
     );
 
-    const result = command(context);
-
     expect(result.success).toEqual(false);
-    expect(result.value).toEqual(2);
-  });
-
-  test("run", () => {
-    const context = { success: true, value: 0 };
-
-    const result = run(GenerateNumberCommand, context);
-
-    expect(result.success).toEqual(true);
     expect(result.value).toEqual(2);
   });
 
   test("undo", () => {
     const context = { success: true, string: "" };
-    const command = compose<typeof context>(GenerateStringCommand, FailCommand);
 
-    const result = command(context);
+    const result = run(context, GenerateStringCommand, FailCommand);
 
     expect(result.success).toEqual(false);
     expect(result.string).toEqual("Undone");

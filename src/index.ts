@@ -46,19 +46,15 @@ export class Runner {
   }
 }
 
-export const compose =
-  <T extends CommandContext>(...commands: CommandClass<T>[]) =>
-  (context: T) => {
-    const copy = { ...context };
-    const runner = new Runner(...commands.map((klass) => new klass(copy)));
-
-    runner.execute();
-    if (!copy.success) runner.undo();
-
-    return copy;
-  };
-
 export const run = <T extends CommandContext>(
-  CommandClass: CommandClass<T>,
-  context: T
-) => compose(CommandClass)(context);
+  context: T,
+  ...commands: CommandClass<T>[]
+) => {
+  const copy = { ...context };
+  const runner = new Runner(...commands.map((klass) => new klass(copy)));
+
+  runner.execute();
+  if (!copy.success) runner.undo();
+
+  return copy;
+};
