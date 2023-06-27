@@ -62,20 +62,6 @@ describe("compose", () => {
     }
   }
 
-  test("stops on failure", () => {
-    const context = { success: true, value: 0 };
-    const command = compose<typeof context>(
-      GenerateNumberCommand,
-      FailCommand,
-      AddTwoCommand
-    );
-
-    const result = command(context);
-
-    expect(result.success).toEqual(false);
-    expect(result.value).toEqual(2);
-  });
-
   test("compose", () => {
     const context = { success: true, value: 0, string: "" };
     const command = compose<typeof context>(
@@ -89,6 +75,20 @@ describe("compose", () => {
     expect(result.success).toEqual(true);
     expect(result.value).toEqual(4);
     expect(result.string).toEqual("Hello");
+  });
+
+  test("stops on failure", () => {
+    const context = { success: true, value: 0 };
+    const command = compose<typeof context>(
+      GenerateNumberCommand,
+      FailCommand,
+      AddTwoCommand
+    );
+
+    const result = command(context);
+
+    expect(result.success).toEqual(false);
+    expect(result.value).toEqual(2);
   });
 
   test("run", () => {
