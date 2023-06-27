@@ -16,6 +16,8 @@
   },
   "keywords": [
     "railway",
+    "command",
+    "pattern",
     "typescript"
   ],
   "author": "Federico Ramirez",
