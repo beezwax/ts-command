@@ -179,6 +179,12 @@ The `#undo` command is called in reverse order from the specified commands. So
 if you compose commands `A`, `B`, `C` and `D`, and command `D` fails, the
 order of the `#undo` calls will be `D -> C -> B -> A`.
 
+### Exceptions
+
+Note that if one command throws, `#undo` will not be called. Also, if one
+`#undo` throws, remaining `#undo` will not be called, either. It's up to you
+to properly handle exceptions inside `#execute` and `#undo` for each command.
+
 ## Composing Commands
 
 You can compose smaller simple commands into a bigger, more complex one. This
