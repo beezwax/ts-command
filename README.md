@@ -3,7 +3,7 @@
 This is an implementation of the [Command
 pattern](https://refactoring.guru/design-patterns/command) for TypeScript. It
 allows you to wrap computations in an object, run them sequentially, stop on
-failure, and undo them.
+failure, undo them, and compose them.
 
 A command must extend the `Command` abstract class and implement `execute`.
 The `execute` method is where your command does the actual work by reading and
