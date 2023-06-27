@@ -75,6 +75,8 @@ expect(result.success).toEqual(true);
 expect(result.value).toEqual(2);
 ```
 
+The `run` function will return a new context, modified by the given command.
+
 ## Running several commands
 
 Chaining commands is the main reason to use the Command pattern. We can run
