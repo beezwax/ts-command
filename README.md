@@ -83,7 +83,7 @@ several commands one after the other by simply passing them to `run`:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = compose<typeof context>(
+const result = run<typeof context>(
   context,
   GenerateNumberCommand,
   AddTwoCommand
