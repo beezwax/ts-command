@@ -205,3 +205,8 @@ expect(result.success).toBe(true);
 expect(result.value).toEqual(4);
 expect(result.string).toEqual("Hello");
 ```
+
+## Testing
+
+Another big advantage of the Command pattern is that your commands are just
+JavaScript objects, and can easily be tested in isolation.

@@ -187,5 +187,23 @@ describe("commands", () => {
       expect(result.value).toEqual(2);
       expect(result.string).toEqual("Undone");
     });
+
+    test("stops on failure, fails inside the composite command", () => {
+      const GenerateStringAndFail = compose<GenerateStringContext>(
+        GenerateStringCommand,
+        FailCommand
+      );
+
+      const context = { success: true, string: "", value: 0 };
+      const result = run<typeof context>(
+        context,
+        GenerateStringAndFail,
+        AddTwoCommand
+      );
+
+      expect(result.success).toEqual(false);
+      expect(result.string).toEqual("Undone");
+      expect(result.value).toEqual(0);
+    });
   });
 });
