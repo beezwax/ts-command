@@ -56,16 +56,34 @@ describe("commands", () => {
     }
   }
 
+  class AsyncAddTwoCommand extends Command {
+    context: AddTwoContext;
+
+    constructor(context: AddTwoContext) {
+      super(context);
+    }
+
+    async execute() {
+      this.context.success = true;
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          this.context.value = this.context.value + 2;
+          resolve();
+        }, 500);
+      });
+    }
+  }
+
   class FailCommand extends Command {
     execute() {
       this.context.success = false;
     }
   }
 
-  test("run", () => {
+  test("run", async () => {
     const context = { success: true, value: 0, string: "" };
 
-    const result = run<typeof context>(
+    const result = await run<typeof context>(
       context,
       GenerateNumberCommand,
       AddTwoCommand,
@@ -77,10 +95,24 @@ describe("commands", () => {
     expect(result.string).toEqual("Hello");
   });
 
-  test("stops on failure", () => {
+  test("async commands", async () => {
     const context = { success: true, value: 0 };
 
-    const result = run<typeof context>(
+    const result = await run<typeof context>(
+      context,
+      GenerateNumberCommand,
+      AsyncAddTwoCommand,
+      AddTwoCommand
+    );
+
+    expect(result.success).toEqual(true);
+    expect(result.value).toEqual(6);
+  });
+
+  test("stops on failure", async () => {
+    const context = { success: true, value: 0 };
+
+    const result = await run<typeof context>(
       context,
       GenerateNumberCommand,
       FailCommand,
@@ -91,10 +123,10 @@ describe("commands", () => {
     expect(result.value).toEqual(2);
   });
 
-  test("undo", () => {
+  test("undo", async () => {
     const context = { success: true, string: "" };
 
-    const result = run<typeof context>(
+    const result = await run<typeof context>(
       context,
       GenerateStringCommand,
       FailCommand
@@ -105,27 +137,39 @@ describe("commands", () => {
   });
 
   describe("compose", () => {
-    test("compose", () => {
+    test("compose", async () => {
       const GenerateAndAddTwo = compose<GenerateNumberContext & AddTwoContext>(
         GenerateNumberCommand,
         AddTwoCommand
       );
 
       const context = { success: true, value: 0 };
-      const result = run<typeof context>(context, GenerateAndAddTwo);
+      const result = await run<typeof context>(context, GenerateAndAddTwo);
 
       expect(result.success).toBe(true);
       expect(result.value).toEqual(4);
     });
 
-    test("run", () => {
+    test("async inside compose", async () => {
+      const GenerateAndAddTwoAsync = compose<
+        GenerateNumberContext & AddTwoContext
+      >(GenerateNumberCommand, AsyncAddTwoCommand);
+
+      const context = { success: true, value: 0 };
+      const result = await run<typeof context>(context, GenerateAndAddTwoAsync);
+
+      expect(result.success).toBe(true);
+      expect(result.value).toEqual(4);
+    });
+
+    test("run", async () => {
       const GenerateAndAddTwo = compose<GenerateNumberContext & AddTwoContext>(
         GenerateNumberCommand,
         AddTwoCommand
       );
 
       const context = { success: true, value: 0, string: "" };
-      const result = run<typeof context>(
+      const result = await run<typeof context>(
         context,
         GenerateAndAddTwo,
         GenerateStringCommand
@@ -136,13 +180,13 @@ describe("commands", () => {
       expect(result.string).toEqual("Hello");
     });
 
-    test("another run", () => {
+    test("another run", async () => {
       const GenerateNumberAndString = compose<
         GenerateNumberContext & GenerateStringContext
       >(GenerateNumberCommand, GenerateStringCommand);
 
       const context = { success: true, value: 0, string: "" };
-      const result = run<typeof context>(
+      const result = await run<typeof context>(
         context,
         GenerateNumberAndString,
         AddTwoCommand
@@ -153,13 +197,13 @@ describe("commands", () => {
       expect(result.string).toEqual("Hello");
     });
 
-    test("can undo", () => {
+    test("can undo", async () => {
       const GenerateNumberAndString = compose<
         GenerateNumberContext & GenerateStringContext
       >(GenerateNumberCommand, GenerateStringCommand);
 
       const context = { success: true, value: 0, string: "" };
-      const result = run<typeof context>(
+      const result = await run<typeof context>(
         context,
         GenerateNumberAndString,
         FailCommand
@@ -170,13 +214,13 @@ describe("commands", () => {
       expect(result.string).toEqual("Undone");
     });
 
-    test("stops on failure", () => {
+    test("stops on failure", async () => {
       const GenerateNumberAndString = compose<
         GenerateNumberContext & GenerateStringContext
       >(GenerateNumberCommand, GenerateStringCommand);
 
       const context = { success: true, value: 0, string: "" };
-      const result = run<typeof context>(
+      const result = await run<typeof context>(
         context,
         GenerateNumberAndString,
         FailCommand,
@@ -188,14 +232,14 @@ describe("commands", () => {
       expect(result.string).toEqual("Undone");
     });
 
-    test("stops on failure, fails inside the composite command", () => {
+    test("stops on failure, fails inside the composite command", async () => {
       const GenerateStringAndFail = compose<GenerateStringContext>(
         GenerateStringCommand,
         FailCommand
       );
 
       const context = { success: true, string: "", value: 0 };
-      const result = run<typeof context>(
+      const result = await run<typeof context>(
         context,
         GenerateStringAndFail,
         AddTwoCommand

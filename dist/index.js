@@ -39,26 +39,30 @@ var Runner = class {
   constructor(...commands) {
     this.commands = commands;
   }
-  execute() {
+  async execute() {
     this.executed = [];
     for (let i = 0; i < this.commands.length; i++) {
       const command = this.commands[i];
       this.executed.push(command);
-      command.execute();
+      await command.execute();
       if (!command.context.success)
         return;
     }
   }
-  undo() {
-    [...this.executed].reverse().forEach((command) => command.undo());
+  async undo() {
+    const reversed = [...this.executed].reverse();
+    for (let i = 0; i < reversed.length; i++) {
+      const command = this.commands[i];
+      await command.undo();
+    }
   }
 };
-var run = (context, ...commands) => {
+var run = async (context, ...commands) => {
   const copy = { ...context };
   const runner = new Runner(...commands.map((klass) => new klass(copy)));
-  runner.execute();
+  await runner.execute();
   if (!copy.success)
-    runner.undo();
+    await runner.undo();
   return copy;
 };
 var compose = (...klasses) => {
@@ -70,11 +74,11 @@ var compose = (...klasses) => {
       const commands = klasses.map((klass) => new klass(this.context));
       this.runner = new Runner(...commands);
     }
-    execute() {
-      this.runner.execute();
+    async execute() {
+      await this.runner.execute();
     }
-    undo() {
-      this.runner.undo();
+    async undo() {
+      await this.runner.undo();
     }
   };
 };

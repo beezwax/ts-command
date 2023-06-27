@@ -69,13 +69,38 @@ You can run a command with the `run` function:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = run<typeof context>(context, GenerateNumberCommand);
+const result = await run<typeof context>(context, GenerateNumberCommand);
 
 expect(result.success).toEqual(true);
 expect(result.value).toEqual(2);
 ```
 
 The `run` function will return a new context, modified by the given command.
+
+## Async Commands
+
+The `run` function will always return a promise, even if your commands are not
+asynchronous, so you'll most likely always want to use `await` when calling
+it.
+
+As you might have guessed, you can define asynchronous commands just like
+regular ones, just add `async` to `#execute` or `#undo` as needed:
+
+```typescript
+class MyAsyncCommand extends Command {
+  context: MyAsyncContext;
+
+  constructor(context: MyAsyncContext) {
+    super(context);
+  }
+
+  async execute() {
+    const result = await someAsyncFunction();
+    this.context.success = true;
+    this.context.value = result;
+  }
+}
+```
 
 ## Running several commands
 
@@ -85,7 +110,7 @@ several commands one after the other by simply passing them to `run`:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = run<typeof context>(
+const result = await run<typeof context>(
   context,
   GenerateNumberCommand,
   AddTwoCommand
@@ -120,7 +145,7 @@ won't be executed:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = run<typeof context>(
+const result = await run<typeof context>(
   context,
   GenerateNumberCommand,
   FailCommand,
@@ -165,7 +190,11 @@ class GenerateStringCommand extends Command {
 ```typescript
 const context = { success: true, string: "" };
 
-const result = run<typeof context>(context, GenerateStringCommand, FailCommand);
+const result = await run<typeof context>(
+  context,
+  GenerateStringCommand,
+  FailCommand
+);
 
 expect(result.success).toEqual(false);
 expect(result.string).toEqual("Undone");
@@ -201,7 +230,7 @@ You can then `run` them like regular commands:
 
 ```typescript
 const context = { success: true, value: 0, string: "" };
-const result = run<typeof context>(
+const result = await run<typeof context>(
   context,
   GenerateNumberAndString,
   AddTwoCommand
@@ -218,7 +247,7 @@ Another big advantage of the Command pattern is that your commands are just
 JavaScript objects, and can easily be tested in isolation.
 
 ```typescript
-const result = run(dummyContext, MyCommand);
+const result = await run(dummyContext, MyCommand);
 
 expect(result.something).toEqual(somethingElse);
 ```

@@ -4,8 +4,8 @@ export interface CommandContext {
 
 interface ICommand {
   context: CommandContext;
-  execute(): void;
-  undo(): void;
+  execute(): void | Promise<void>;
+  undo(): void | Promise<void>;
 }
 
 export abstract class Command implements ICommand {
@@ -15,7 +15,7 @@ export abstract class Command implements ICommand {
     this.context = context;
   }
 
-  abstract execute(): void;
+  abstract execute(): void | Promise<void>;
 
   undo() {
     // NOOP
@@ -34,30 +34,34 @@ export class Runner {
     this.commands = commands;
   }
 
-  execute() {
+  async execute() {
     this.executed = [];
     for (let i = 0; i < this.commands.length; i++) {
       const command = this.commands[i];
       this.executed.push(command);
-      command.execute();
+      await command.execute();
       if (!command.context.success) return;
     }
   }
 
-  undo() {
-    [...this.executed].reverse().forEach((command) => command.undo());
+  async undo() {
+    const reversed = [...this.executed].reverse();
+    for (let i = 0; i < reversed.length; i++) {
+      const command = this.commands[i];
+      await command.undo();
+    }
   }
 }
 
-export const run = <T extends CommandContext>(
+export const run = async <T extends CommandContext>(
   context: T,
   ...commands: CommandClass<T>[]
 ) => {
   const copy = { ...context };
   const runner = new Runner(...commands.map((klass) => new klass(copy)));
 
-  runner.execute();
-  if (!copy.success) runner.undo();
+  await runner.execute();
+  if (!copy.success) await runner.undo();
 
   return copy;
 };
@@ -75,12 +79,12 @@ export const compose = <T extends CommandContext>(
       this.runner = new Runner(...commands);
     }
 
-    execute() {
-      this.runner.execute();
+    async execute() {
+      await this.runner.execute();
     }
 
-    undo() {
-      this.runner.undo();
+    async undo() {
+      await this.runner.undo();
     }
   };
 };
