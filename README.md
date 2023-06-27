@@ -2,12 +2,12 @@
 
 This is an implementation of the [Command
 pattern](https://refactoring.guru/design-patterns/command) for TypeScript. It
-allows you to wrap computations in an object, compose them, call them
-sequentially, stop on failure, and undo them.
+allows you to wrap computations in an object, run them sequentially, stop on
+failure, and undo them.
 
-A command must extend the `Command` abstract class and implement the `run`
-method. The `run` method is where your command does the actual work by reading
-and writing to its received `context`.
+A command must extend the `Command` abstract class and implement `execute`.
+The `execute` method is where your command does the actual work by reading and
+writing to its received `context`.
 
 The command is responsible for setting `context.success` to either `true` or
 `false`, to reflect whether the command succeeded or not.
@@ -31,7 +31,7 @@ class GenerateNumberCommand extends Command {
     super(context);
   }
 
-  run() {
+  execute() {
     this.context.success = true;
     this.context.value = 2;
   }
@@ -55,7 +55,7 @@ class AddTwoCommand extends Command {
     super(context);
   }
 
-  run() {
+  execute() {
     this.context.success = true;
     this.context.value = this.context.value + 2;
   }
@@ -69,7 +69,7 @@ You can run a command with the `run` function:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = run(context, GenerateNumberCommand, context);
+const result = run<typeof context>(context, GenerateNumberCommand);
 
 expect(result.success).toEqual(true);
 expect(result.value).toEqual(2);
@@ -77,17 +77,17 @@ expect(result.value).toEqual(2);
 
 ## Running several commands
 
-Composing commands is the main reason to use the Command pattern. We can
-compose several small commands into a bigger one using `compose`.
-
-The `compose` function will return a new command that will call all of the
-given commands one after the other.
+Chaining commands is the main reason to use the Command pattern. We can run
+several commands one after the other by simply passing them to `run`:
 
 ```typescript
 const context = { success: true, value: 0 };
-const command = compose<typeof context>(GenerateNumberCommand, AddTwoCommand);
 
-const result = command(context);
+const result = compose<typeof context>(
+  context,
+  GenerateNumberCommand,
+  AddTwoCommand
+);
 
 expect(result.success).toEqual(true);
 expect(result.value).toEqual(4);
@@ -101,11 +101,12 @@ all our commands.
 Below is a very simple command that all it does is fail by setting
 `context.success` to `false`.
 
-If all we need is a success field, we can use the default `CommandContext`:
+If all the context we need is a `success` field, we can use the default
+to `CommandContext`:
 
 ```typescript
 class FailCommand extends Command {
-  run() {
+  execute() {
     this.context.success = false;
   }
 }
@@ -116,13 +117,13 @@ won't be executed:
 
 ```typescript
 const context = { success: true, value: 0 };
-const command = compose<typeof context>(
+
+const result = run<typeof context>(
+  context,
   GenerateNumberCommand,
   FailCommand,
   AddTwoCommand
 );
-
-const result = command(context);
 
 expect(result.success).toEqual(false);
 expect(result.value).toEqual(2);
@@ -147,7 +148,7 @@ class GenerateStringCommand extends Command {
     super(context);
   }
 
-  run() {
+  execute() {
     this.context.success = true;
     this.context.string = "Hello";
   }
@@ -161,9 +162,8 @@ class GenerateStringCommand extends Command {
 
 ```typescript
 const context = { success: true, string: "" };
-const command = compose<typeof context>(GenerateStringCommand, FailCommand);
 
-const result = command(context);
+const result = run<typeof context>(context, GenerateStringCommand, FailCommand);
 
 expect(result.success).toEqual(false);
 expect(result.string).toEqual("Undone");
@@ -176,6 +176,3 @@ Note that the initial value of `context.string` is `"Hello"`, but after
 The `#undo` command is called in reverse order from the specified commands. So
 if you compose commands `A`, `B`, `C` and `D`, and command `D` fails, the
 order of the `#undo` calls will be `D -> C -> B -> A`.
-
-The `#undo` method is also called by the `run` function, as `run` is just an
-alias for `compose`.
