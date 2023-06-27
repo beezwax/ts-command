@@ -65,7 +65,7 @@ describe("compose", () => {
   test("run", () => {
     const context = { success: true, value: 0, string: "" };
 
-    const result = run(
+    const result = run<typeof context>(
       context,
       GenerateNumberCommand,
       AddTwoCommand,
@@ -80,7 +80,7 @@ describe("compose", () => {
   test("stops on failure", () => {
     const context = { success: true, value: 0 };
 
-    const result = run(
+    const result = run<typeof context>(
       context,
       GenerateNumberCommand,
       FailCommand,
@@ -94,7 +94,11 @@ describe("compose", () => {
   test("undo", () => {
     const context = { success: true, string: "" };
 
-    const result = run(context, GenerateStringCommand, FailCommand);
+    const result = run<typeof context>(
+      context,
+      GenerateStringCommand,
+      FailCommand
+    );
 
     expect(result.success).toEqual(false);
     expect(result.string).toEqual("Undone");

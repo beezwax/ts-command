@@ -69,13 +69,13 @@ You can run a command with the `run` function:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = run(GenerateNumberCommand, context);
+const result = run(context, GenerateNumberCommand, context);
 
 expect(result.success).toEqual(true);
 expect(result.value).toEqual(2);
 ```
 
-## Composing commands
+## Running several commands
 
 Composing commands is the main reason to use the Command pattern. We can
 compose several small commands into a bigger one using `compose`.

@@ -4,16 +4,13 @@ export interface CommandContext {
 
 export abstract class Command {
   context: CommandContext;
-  executed: boolean;
 
   constructor(context: CommandContext) {
     this.context = context;
-    this.executed = false;
   }
 
   execute() {
     if (!this.context.success) return;
-    this.executed = true;
     this.run();
   }
 
@@ -30,19 +27,24 @@ export interface CommandClass<T extends CommandContext> {
 
 export class Runner {
   commands: Command[];
+  executed: Command[];
 
   constructor(...commands: Command[]) {
     this.commands = commands;
   }
 
   execute() {
-    this.commands.forEach((command) => command.execute());
+    this.executed = [];
+    for (let i = 0; i < this.commands.length; i++) {
+      const command = this.commands[i];
+      this.executed.push(command);
+      command.execute();
+      if (!command.context.success) return;
+    }
   }
 
   undo() {
-    [...this.commands]
-      .reverse()
-      .forEach((command) => command.executed && command.undo());
+    [...this.executed].reverse().forEach((command) => command.undo());
   }
 }
 
