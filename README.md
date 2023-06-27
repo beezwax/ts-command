@@ -210,3 +210,13 @@ expect(result.string).toEqual("Hello");
 
 Another big advantage of the Command pattern is that your commands are just
 JavaScript objects, and can easily be tested in isolation.
+
+```typescript
+const result = run(dummyContext, MyCommand);
+
+expect(result.something).toEqual(somethingElse);
+```
+
+If you now each command works independently, and you know the command chaining
+works, then you can safely chain and compose your commands to generate complex
+actions without the need to test as much.
