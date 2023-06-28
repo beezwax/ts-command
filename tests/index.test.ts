@@ -5,11 +5,11 @@ describe("commands", () => {
     value: number;
   }
 
-  class GenerateNumberCommand extends Command {
+  class GenerateNumberCommand implements Command {
     context: GenerateNumberContext;
 
     constructor(context: GenerateNumberContext) {
-      super(context);
+      this.context = context;
     }
 
     execute() {
@@ -22,11 +22,11 @@ describe("commands", () => {
     value: number;
   }
 
-  class AddTwoCommand extends Command {
+  class AddTwoCommand implements Command {
     context: AddTwoContext;
 
     constructor(context: AddTwoContext) {
-      super(context);
+      this.context = context;
     }
 
     execute() {
@@ -39,11 +39,11 @@ describe("commands", () => {
     string: string;
   }
 
-  class GenerateStringCommand extends Command {
+  class GenerateStringCommand implements Command {
     context: GenerateStringContext;
 
     constructor(context: GenerateStringContext) {
-      super(context);
+      this.context = context;
     }
 
     execute() {
@@ -56,11 +56,11 @@ describe("commands", () => {
     }
   }
 
-  class AsyncAddTwoCommand extends Command {
+  class AsyncAddTwoCommand implements Command {
     context: AddTwoContext;
 
     constructor(context: AddTwoContext) {
-      super(context);
+      this.context = context;
     }
 
     async execute() {
@@ -74,7 +74,13 @@ describe("commands", () => {
     }
   }
 
-  class FailCommand extends Command {
+  class FailCommand implements Command {
+    context: CommandContext;
+
+    constructor(context: CommandContext) {
+      this.context = context;
+    }
+
     execute() {
       this.context.success = false;
     }

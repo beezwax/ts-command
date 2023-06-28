@@ -2,21 +2,23 @@
 
 This is an implementation of the [Command
 pattern](https://refactoring.guru/design-patterns/command) for TypeScript. It
-allows you to wrap computations in an object, run them sequentially, stop on
+allows you to wrap computations into objects, run them sequentially, stop on
 failure, undo them, and compose them.
 
-A command must extend the `Command` abstract class and implement `execute`.
-The `execute` method is where your command does the actual work by reading and
-writing to its received `context`.
+A command is just a class that implement the `Command` interface. All commands
+have a `context: CommandContext` property, and an `execute(): void` method.
+
+The `execute` method is where the command does the actual work by reading and
+writing to its `context`.
 
 The command is responsible for setting `context.success` to either `true` or
 `false`, to reflect whether the command succeeded or not.
 
-Commands must also define their required context interface, which must extend
-`CommandContext`. The interface must include all the fields your command uses
-from the context, either by reading them or modifying them.
+Commands can also define their own context interface, extending from
+`CommandContext`. The interface defines all the fields your command uses from
+the context.
 
-Below is an example of a very simple command which simply generates a new
+Below is an example of a very simple command that simply generates a new
 number (the number `2`), and saves it into `context.value`:
 
 ```typescript
@@ -24,11 +26,11 @@ interface GenerateNumberContext extends CommandContext {
   value: number;
 }
 
-class GenerateNumberCommand extends Command {
+class GenerateNumberCommand implements Command {
   context: GenerateNumberContext;
 
   constructor(context: GenerateNumberContext) {
-    super(context);
+    this.context = context;
   }
 
   execute() {
@@ -38,8 +40,8 @@ class GenerateNumberCommand extends Command {
 }
 ```
 
-Note that `context.success` is present in all commands and is defined in
-`CommandContext`.
+Note that `context.success` comes from `CommandContext`, and is something all
+commands have in common.
 
 Here is another command that takes a number and adds 2 to it:
 
@@ -48,11 +50,11 @@ interface AddTwoContext extends CommandContext {
   value: number;
 }
 
-class AddTwoCommand extends Command {
+class AddTwoCommand implements Command {
   context: AddTwoContext;
 
   constructor(context: AddTwoContext) {
-    super(context);
+    this.context = context;
   }
 
   execute() {
@@ -75,7 +77,20 @@ expect(result.success).toEqual(true);
 expect(result.value).toEqual(2);
 ```
 
-The `run` function will return a new context, modified by the given command.
+Or more succinctly:
+
+```typescript
+const { success, value } = await run(
+  { success: true, value: 0 },
+  GenerateNumberCommand
+);
+
+expect(success).toEqual(true);
+expect(value).toEqual(2);
+```
+
+The `run` function will return a **copy** of the context, modified by the
+given command.
 
 ## Async Commands
 
@@ -87,11 +102,11 @@ As you might have guessed, you can define asynchronous commands just like
 regular ones, just add `async` to `#execute` or `#undo` as needed:
 
 ```typescript
-class MyAsyncCommand extends Command {
+class MyAsyncCommand implements Command {
   context: MyAsyncContext;
 
   constructor(context: MyAsyncContext) {
-    super(context);
+    this.context = context;
   }
 
   async execute() {
@@ -110,14 +125,14 @@ several commands one after the other by simply passing them to `run`:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = await run<typeof context>(
+const { success, value } = await run<typeof context>(
   context,
   GenerateNumberCommand,
   AddTwoCommand
 );
 
-expect(result.success).toEqual(true);
-expect(result.value).toEqual(4);
+expect(success).toEqual(true);
+expect(value).toEqual(4);
 ```
 
 TypeScript will do its magic and make sure the context is valid and satisfies
@@ -132,7 +147,13 @@ If all the context we need is a `success` field, we can use the default
 to `CommandContext`:
 
 ```typescript
-class FailCommand extends Command {
+class FailCommand implements Command {
+  context: CommandContext;
+
+  constructor(context: CommandContext) {
+    this.context = context;
+  }
+
   execute() {
     this.context.success = false;
   }
@@ -145,15 +166,15 @@ won't be executed:
 ```typescript
 const context = { success: true, value: 0 };
 
-const result = await run<typeof context>(
+const { success, value } = await run<typeof context>(
   context,
   GenerateNumberCommand,
   FailCommand,
   AddTwoCommand
 );
 
-expect(result.success).toEqual(false);
-expect(result.value).toEqual(2);
+expect(success).toEqual(false);
+expect(value).toEqual(2);
 ```
 
 Note that `result.value` is `2` because `AddTwoCommand` was not executed.
@@ -168,11 +189,11 @@ interface GenerateStringContext extends CommandContext {
   string: string;
 }
 
-class GenerateStringCommand extends Command {
+class GenerateStringCommand implements Command {
   context: GenerateStringContext;
 
   constructor(context: GenerateStringContext) {
-    super(context);
+    this.context = context;
   }
 
   execute() {
@@ -190,14 +211,14 @@ class GenerateStringCommand extends Command {
 ```typescript
 const context = { success: true, string: "" };
 
-const result = await run<typeof context>(
+const { success, string } = await run<typeof context>(
   context,
   GenerateStringCommand,
   FailCommand
 );
 
-expect(result.success).toEqual(false);
-expect(result.string).toEqual("Undone");
+expect(success).toEqual(false);
+expect(string).toEqual("Undone");
 ```
 
 Note that the initial value of `context.string` is `"Hello"`, but after
@@ -230,15 +251,15 @@ You can then `run` them like regular commands:
 
 ```typescript
 const context = { success: true, value: 0, string: "" };
-const result = await run<typeof context>(
+const { success, value, string } = await run<typeof context>(
   context,
   GenerateNumberAndString,
   AddTwoCommand
 );
 
-expect(result.success).toBe(true);
-expect(result.value).toEqual(4);
-expect(result.string).toEqual("Hello");
+expect(success).toBe(true);
+expect(value).toEqual(4);
+expect(string).toEqual("Hello");
 ```
 
 ## Testing
@@ -256,7 +277,3 @@ If you know each command works independently (because you tested them), and
 you know the command chaining and composition works (because this library
 tested them), then you can feel safe when chaining and composing commands to
 perform complex actions.
-
-Note that you should still test command composition, but the tests can be
-mostly [happy paths](https://en.wikipedia.org/wiki/Happy_path), as failure
-should be contemplated within each command test.

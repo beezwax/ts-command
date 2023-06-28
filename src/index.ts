@@ -2,35 +2,21 @@ export interface CommandContext {
   success: boolean;
 }
 
-interface ICommand {
+export interface Command {
   context: CommandContext;
   execute(): void | Promise<void>;
-  undo(): void | Promise<void>;
-}
-
-export abstract class Command implements ICommand {
-  context: CommandContext;
-
-  constructor(context: CommandContext) {
-    this.context = context;
-  }
-
-  abstract execute(): void | Promise<void>;
-
-  undo() {
-    // NOOP
-  }
+  undo?(): void | Promise<void>;
 }
 
 export interface CommandClass<T extends CommandContext> {
-  new (context: T): ICommand;
+  new (context: T): Command;
 }
 
 export class Runner {
-  commands: ICommand[];
-  executed: ICommand[];
+  commands: Command[];
+  executed: Command[];
 
-  constructor(...commands: ICommand[]) {
+  constructor(...commands: Command[]) {
     this.commands = commands;
     this.executed = [];
   }
@@ -49,7 +35,7 @@ export class Runner {
     const reversed = [...this.executed].reverse();
     for (let i = 0; i < reversed.length; i++) {
       const command = this.commands[i];
-      await command.undo();
+      command.undo && (await command.undo());
     }
   }
 }
@@ -70,7 +56,7 @@ export const run = async <T extends CommandContext>(
 export const compose = <T extends CommandContext>(
   ...klasses: CommandClass<T>[]
 ) => {
-  return class ComposedCommand implements ICommand {
+  return class ComposedCommand implements Command {
     context: T;
     runner: Runner;
 
