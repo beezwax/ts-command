@@ -32,6 +32,7 @@ export class Runner {
 
   constructor(...commands: ICommand[]) {
     this.commands = commands;
+    this.executed = [];
   }
 
   async execute() {
