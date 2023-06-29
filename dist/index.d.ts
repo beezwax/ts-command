@@ -1,24 +1,18 @@
 interface CommandContext {
     success: boolean;
 }
-interface ICommand {
+interface Command {
     context: CommandContext;
     execute(): void | Promise<void>;
-    undo(): void | Promise<void>;
-}
-declare abstract class Command implements ICommand {
-    context: CommandContext;
-    constructor(context: CommandContext);
-    abstract execute(): void | Promise<void>;
-    undo(): void;
+    undo?(): void | Promise<void>;
 }
 interface CommandClass<T extends CommandContext> {
-    new (context: T): ICommand;
+    new (context: T): Command;
 }
 declare class Runner {
-    commands: ICommand[];
-    executed: ICommand[];
-    constructor(...commands: ICommand[]);
+    commands: Command[];
+    executed: Command[];
+    constructor(...commands: Command[]);
     execute(): Promise<void>;
     undo(): Promise<void>;
 }

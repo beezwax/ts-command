@@ -19,25 +19,17 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
-  Command: () => Command,
   Runner: () => Runner,
   compose: () => compose,
   run: () => run
 });
 module.exports = __toCommonJS(src_exports);
-var Command = class {
-  context;
-  constructor(context) {
-    this.context = context;
-  }
-  undo() {
-  }
-};
 var Runner = class {
   commands;
   executed;
   constructor(...commands) {
     this.commands = commands;
+    this.executed = [];
   }
   async execute() {
     this.executed = [];
@@ -53,7 +45,7 @@ var Runner = class {
     const reversed = [...this.executed].reverse();
     for (let i = 0; i < reversed.length; i++) {
       const command = this.commands[i];
-      await command.undo();
+      command.undo && await command.undo();
     }
   }
 };
@@ -84,7 +76,6 @@ var compose = (...klasses) => {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Command,
   Runner,
   compose,
   run
