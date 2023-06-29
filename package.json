@@ -21,6 +21,6 @@
     "typescript"
   ],
   "author": "Federico Ramirez",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {}
 }
