@@ -261,11 +261,19 @@ describe("commands", () => {
     it("generates based on context", async () => {
       const context = { success: true, value: 0, string: "", foo: true };
 
+      interface GenerateNumberOrCommandBasedOnFooContext extends Context {
+        foo: boolean;
+      }
+
+      const GenerateNumberOrCommandBasedOnFoo = cond<
+        GenerateNumberOrCommandBasedOnFooContext &
+          GenerateNumberContext &
+          GenerateStringContext
+      >((ctx) => (ctx.foo ? GenerateNumberCommand : GenerateStringCommand));
+
       const { value, string } = await run<typeof context>(
         context,
-        cond<typeof context>((ctx) =>
-          ctx.foo ? GenerateNumberCommand : GenerateStringCommand
-        )
+        GenerateNumberOrCommandBasedOnFoo
       );
 
       expect(value).toEqual(2);

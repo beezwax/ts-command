@@ -273,7 +273,9 @@ interface ValidateExcepOrCSVContext extends Context {
   format: string;
 }
 
-const ValidateExcelOrCSV = cond<ValidateExcelOrCSVContext>((context) =>
+const ValidateExcelOrCSV = cond<
+  ValidateExcelOrCSVContext & ValidateExcelFileContext & ValidateCSVFileContext
+>((context) =>
   context.format === "XLSX" ? ValidateExcelFile : ValidateCSVFile
 );
 ```
