@@ -1,4 +1,4 @@
-import { Command, Context, run, compose } from "../src/index";
+import { Command, Context, run, compose, cond } from "../src/index";
 
 describe("commands", () => {
   interface GenerateNumberContext extends Context {
@@ -254,6 +254,65 @@ describe("commands", () => {
       expect(result.success).toEqual(false);
       expect(result.string).toEqual("Undone");
       expect(result.value).toEqual(0);
+    });
+  });
+
+  describe("cond", () => {
+    it("generates based on context", async () => {
+      const context = { success: true, value: 0, string: "", foo: true };
+
+      const { value, string } = await run<typeof context>(
+        context,
+        cond<typeof context>((ctx) =>
+          ctx.foo ? GenerateNumberCommand : GenerateStringCommand
+        )
+      );
+
+      expect(value).toEqual(2);
+      expect(string).toEqual("");
+    });
+
+    it("generates based on context again", async () => {
+      const context = { success: true, value: 0, string: "", foo: false };
+
+      const { value, string } = await run<typeof context>(
+        context,
+        cond<typeof context>((ctx) =>
+          ctx.foo ? GenerateNumberCommand : GenerateStringCommand
+        )
+      );
+
+      expect(value).toEqual(0);
+      expect(string).toEqual("Hello");
+    });
+
+    it("can undo", async () => {
+      const context = { success: true, value: 0, string: "", foo: false };
+
+      const { value, string } = await run<typeof context>(
+        context,
+        cond<typeof context>((ctx) =>
+          ctx.foo ? GenerateNumberCommand : GenerateStringCommand
+        ),
+        FailCommand
+      );
+
+      expect(value).toEqual(0);
+      expect(string).toEqual("Undone");
+    });
+
+    it("can be composed", async () => {
+      const context = { success: true, value: 0, string: "", foo: false };
+
+      const Composed = compose(
+        GenerateNumberCommand,
+        cond<typeof context>(() => GenerateStringCommand),
+        FailCommand
+      );
+      const { value, string } = await run<typeof context>(context, Composed);
+
+      expect(value).toEqual(2);
+      expect(string).toEqual("Undone");
     });
   });
 });

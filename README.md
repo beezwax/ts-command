@@ -262,6 +262,18 @@ expect(value).toEqual(4);
 expect(string).toEqual("Hello");
 ```
 
+## Conditional Commands
+
+Sometimes you want to run a command based on a given input. In that case, you
+can use `cond` to run a _conditional_ check, and return the command you want
+to execute:
+
+```typescript
+const ValidateExcelOrCSV = cond((context) =>
+  context.format === "XLSX" ? ValidateExcelFile : ValidateCSVFile
+);
+```
+
 ## Testing
 
 Another big advantage of the Command pattern is that your commands are just

@@ -73,3 +73,29 @@ export const compose = <T extends Context>(...klasses: CommandClass<T>[]) => {
     }
   };
 };
+
+export const cond = <T extends Context>(
+  fn: (context: T) => CommandClass<T>
+) => {
+  return class ConditionalDelegator implements Command {
+    context: T;
+    command: Command | null;
+
+    constructor(context: T) {
+      this.context = context;
+      this.command = null;
+    }
+
+    async execute() {
+      const klass = fn(this.context);
+      this.command = new klass(this.context);
+      await this.command.execute();
+    }
+
+    async undo() {
+      if (!this.command) throw new Error("Did not execute, cannot undo");
+
+      this.command.undo && (await this.command.undo());
+    }
+  };
+};
