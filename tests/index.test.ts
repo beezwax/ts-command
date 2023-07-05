@@ -1,7 +1,7 @@
-import { Command, CommandContext, run, compose } from "../src/index";
+import { Command, Context, run, compose } from "../src/index";
 
 describe("commands", () => {
-  interface GenerateNumberContext extends CommandContext {
+  interface GenerateNumberContext extends Context {
     value: number;
   }
 
@@ -18,7 +18,7 @@ describe("commands", () => {
     }
   }
 
-  interface AddTwoContext extends CommandContext {
+  interface AddTwoContext extends Context {
     value: number;
   }
 
@@ -35,7 +35,7 @@ describe("commands", () => {
     }
   }
 
-  interface GenerateStringContext extends CommandContext {
+  interface GenerateStringContext extends Context {
     string: string;
   }
 
@@ -75,9 +75,9 @@ describe("commands", () => {
   }
 
   class FailCommand implements Command {
-    context: CommandContext;
+    context: Context;
 
-    constructor(context: CommandContext) {
+    constructor(context: Context) {
       this.context = context;
     }
 

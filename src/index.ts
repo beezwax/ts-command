@@ -1,14 +1,14 @@
-export interface CommandContext {
+export interface Context {
   success: boolean;
 }
 
 export interface Command {
-  context: CommandContext;
+  context: Context;
   execute(): void | Promise<void>;
   undo?(): void | Promise<void>;
 }
 
-export interface CommandClass<T extends CommandContext> {
+export interface CommandClass<T extends Context> {
   new (context: T): Command;
 }
 
@@ -40,7 +40,7 @@ export class Runner {
   }
 }
 
-export const run = async <T extends CommandContext>(
+export const run = async <T extends Context>(
   context: T,
   ...commands: CommandClass<T>[]
 ) => {
@@ -53,9 +53,7 @@ export const run = async <T extends CommandContext>(
   return copy;
 };
 
-export const compose = <T extends CommandContext>(
-  ...klasses: CommandClass<T>[]
-) => {
+export const compose = <T extends Context>(...klasses: CommandClass<T>[]) => {
   return class ComposedCommand implements Command {
     context: T;
     runner: Runner;

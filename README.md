@@ -6,7 +6,7 @@ allows you to wrap computations into objects, run them sequentially, stop on
 failure, undo them, and compose them.
 
 A command is just a class that implement the `Command` interface. All commands
-have a `context: CommandContext` property, and an `execute(): void` method.
+have a `context: Context` property, and an `execute(): void` method.
 
 The `execute` method is where the command does the actual work by reading and
 writing to its `context`.
@@ -15,14 +15,14 @@ The command is responsible for setting `context.success` to either `true` or
 `false`, to reflect whether the command succeeded or not.
 
 Commands can also define their own context interface, extending from
-`CommandContext`. The interface defines all the fields your command uses from
+`Context`. The interface defines all the fields your command uses from
 the context.
 
 Below is an example of a very simple command that simply generates a new
 number (the number `2`), and saves it into `context.value`:
 
 ```typescript
-interface GenerateNumberContext extends CommandContext {
+interface GenerateNumberContext extends Context {
   value: number;
 }
 
@@ -40,13 +40,13 @@ class GenerateNumberCommand implements Command {
 }
 ```
 
-Note that `context.success` comes from `CommandContext`, and is something all
+Note that `context.success` comes from `Context`, and is something all
 commands have in common.
 
 Here is another command that takes a number and adds 2 to it:
 
 ```typescript
-interface AddTwoContext extends CommandContext {
+interface AddTwoContext extends Context {
   value: number;
 }
 
@@ -144,13 +144,13 @@ Below is a very simple command that all it does is fail by setting
 `context.success` to `false`.
 
 If all the context we need is a `success` field, we can use the default
-to `CommandContext`:
+to `Context`:
 
 ```typescript
 class FailCommand implements Command {
-  context: CommandContext;
+  context: Context;
 
-  constructor(context: CommandContext) {
+  constructor(context: Context) {
     this.context = context;
   }
 
@@ -185,7 +185,7 @@ You can define an `undo` method if you need to clean up after your command
 when a subsequent command fails:
 
 ```typescript
-interface GenerateStringContext extends CommandContext {
+interface GenerateStringContext extends Context {
   string: string;
 }
 
