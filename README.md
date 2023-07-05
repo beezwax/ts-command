@@ -269,7 +269,7 @@ can use `cond` to run a _conditional_ check, and return the command you want
 to execute:
 
 ```typescript
-interface ValidateExcepOrCSVContext extends Context {
+interface ValidateExcelOrCSVContext extends Context {
   format: string;
 }
 
