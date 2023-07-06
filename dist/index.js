@@ -21,6 +21,7 @@ var src_exports = {};
 __export(src_exports, {
   Runner: () => Runner,
   compose: () => compose,
+  cond: () => cond,
   run: () => run
 });
 module.exports = __toCommonJS(src_exports);
@@ -74,9 +75,30 @@ var compose = (...klasses) => {
     }
   };
 };
+var cond = (fn) => {
+  return class ConditionalDelegator {
+    context;
+    command;
+    constructor(context) {
+      this.context = context;
+      this.command = null;
+    }
+    async execute() {
+      const klass = fn(this.context);
+      this.command = new klass(this.context);
+      await this.command.execute();
+    }
+    async undo() {
+      if (!this.command)
+        throw new Error("Did not execute, cannot undo");
+      this.command.undo && await this.command.undo();
+    }
+  };
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Runner,
   compose,
+  cond,
   run
 });
